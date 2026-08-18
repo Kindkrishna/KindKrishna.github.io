@@ -137,6 +137,26 @@ ul { list-style: none; }
   background: rgba(255,255,255,.15);
   transform: translateY(-2px);
 }
+.btn-certificate {
+  background: #0F766E;
+  color: #fff;
+}
+.btn-certificate:hover {
+  background: #115E59;
+  color: #fff;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(15,118,110,.28);
+}
+.btn-linkedin {
+  background: #2563EB;
+  color: #fff;
+}
+.btn-linkedin:hover {
+  background: #1D4ED8;
+  color: #fff;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(37,99,235,.28);
+}
 .btn-full { width: 100%; justify-content: center; }
 
 /* ── NAV ── */
