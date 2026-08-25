@@ -1,5 +1,4 @@
-
-![K K Krishna Profile]([https://github.com/Kindkrishna/KindKrishna.github.io/blob/main/prof.png]
+![K K Krishna Profile](https://github.com/Kindkrishna/KindKrishna.github.io/blob/main/prof.png)
 
 
 
