@@ -1,4 +1,4 @@
-![K K Krishna Profile](https://github.com/Kindkrishna/KindKrishna.github.io/blob/main/prof.png)
+![K K Krishna Profile](https://github.com/Kindkrishna/KindKrishna.github.io/blob/main/prof.png?raw=true&s=200)
 
 # Kishor Kumar Krishna — Personal Portfolio Website
 
