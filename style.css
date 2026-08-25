@@ -557,6 +557,14 @@ ul { list-style: none; }
   flex-direction: column;
   gap: 14px;
 }
+.project-thumbnail {
+  width: calc(100% + 64px);
+  height: 180px;
+  margin: -32px -32px 4px;
+  object-fit: cover;
+  border-bottom: 1px solid var(--c-border);
+  background: var(--c-alt-bg);
+}
 .project-card:hover {
   transform: translateY(-6px);
   box-shadow: var(--shadow-lg);

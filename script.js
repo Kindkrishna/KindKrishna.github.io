@@ -141,6 +141,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const card = document.createElement('article');
     card.className = 'project-card';
     card.innerHTML = `
+      ${project.thumbnail ? `<img class="project-thumbnail" src="${project.thumbnail}" alt="${project.title} project preview" loading="lazy">` : ''}
       <div class="project-tag">${project.tag}</div>
       <h3 class="project-title">${project.title}</h3>
       <p class="project-desc">${project.desc}</p>
@@ -150,6 +151,30 @@ document.addEventListener('DOMContentLoaded', () => {
       </div>
     `;
     grid.appendChild(card);
+  }
+
+  function getReadmeThumbnail (repo) {
+    const readmeUrl = `https://api.github.com/repos/${repo.full_name}/readme`;
+
+    return fetch(readmeUrl, { headers: { Accept: 'application/vnd.github+json' } })
+      .then(response => response.ok ? response.json() : null)
+      .then(readme => {
+        if (!readme || !readme.download_url) return null;
+        return fetch(readme.download_url)
+          .then(response => response.ok ? response.text() : '')
+          .then(markdown => {
+            const imageMatches = [
+              ...markdown.matchAll(/!\[[^\]]*\]\(([^)\s]+)(?:\s+['"][^'"]*['"])?\)/g),
+              ...markdown.matchAll(/<img[^>]+src=["']([^"']+)["']/gi)
+            ];
+            const image = imageMatches
+              .map(match => match[1])
+              .find(url => !/shields\.io|badge|travis-ci|codecov/i.test(url));
+
+            return image ? new URL(image, readme.download_url).href : null;
+          });
+      })
+      .catch(() => null);
   }
 
   function loadGitHubProjects () {
@@ -178,13 +203,14 @@ document.addEventListener('DOMContentLoaded', () => {
             repo.topics.slice(0, 2).forEach(topic => techStack.push(topic));
           }
 
-          addProject({
-            tag: repo.private ? 'Private' : 'Open Source',
-            title: repo.name,
-            desc: repo.description || 'No repository description provided.',
-            tech: techStack,
-            link: repo.html_url
-          });
+          getReadmeThumbnail(repo).then(thumbnail => addProject({
+              tag: repo.private ? 'Private' : 'Open Source',
+              title: repo.name,
+              desc: repo.description || 'No repository description provided.',
+              tech: techStack,
+              link: repo.html_url,
+              thumbnail
+            }));
         });
       })
       .catch(() => {
