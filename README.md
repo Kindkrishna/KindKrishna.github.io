@@ -1,3 +1,5 @@
+![K K Krishna Portfolio Banner](https://copilot.microsoft.com/th/id/BCO.6eb3f217-d34f-4877-b7a7-313893db8b1e.png)
+
 # Kishor Kumar Krishna — Personal Portfolio Website
 
 A clean, modern, mobile-responsive portfolio website for job applications in Data Science & BI.
