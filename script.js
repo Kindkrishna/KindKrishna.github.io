@@ -155,108 +155,75 @@ document.addEventListener('DOMContentLoaded', () => {
     grid.appendChild(card);
   }
 
-  function getReadmeThumbnail (repo) {
-    const readmeUrl = `https://api.github.com/repos/${repo.full_name}/readme`;
-
-    return fetch(readmeUrl, { 
-      headers: { Accept: 'application/vnd.github+json' },
-      timeout: 5000
-    })
-      .then(response => response.ok ? response.json() : null)
-      .then(readme => {
-        if (!readme || !readme.download_url) return null;
-        return fetch(readme.download_url)
-          .then(response => response.ok ? response.text() : '')
-          .then(markdown => {
-            const imageMatches = [
-              ...markdown.matchAll(/!\[[^\]]*\]\(([^)\s]+)(?:\s+['"][^'"]*['"])?\)/g),
-              ...markdown.matchAll(/<img[^>]+src=["']([^"']+)["']/gi)
-            ];
-            const image = imageMatches
-              .map(match => match[1])
-              .find(url => !/shields\.io|badge|travis-ci|codecov/i.test(url));
-
-            return image ? new URL(image, readme.download_url).href : null;
-          });
-      })
-      .catch(() => null);
-  }
-
-  function loadGitHubProjects () {
-    const username = 'Kindkrishna';
-    const url = `https://api.github.com/users/${username}/repos?sort=updated&per_page=8&type=public`;
+  /* ── HARDCODED PROJECTS SECTION ── */
+  function loadProjects () {
     const grid = document.getElementById('projectsGrid');
-    
     if (!grid) return;
-    
+
+    // Remove loading message
     const loading = grid.querySelector('.project-loading');
+    if (loading) loading.remove();
 
-    fetch(url, {
-      headers: {
-        'Accept': 'application/vnd.github.v3+json',
-        'User-Agent': 'PortfolioPage'
+    // Your featured projects - add more as you create them
+    const projects = [
+      {
+        tag: 'Data Science',
+        title: 'Data Analysis & Visualization Projects',
+        desc: 'Collection of data science projects using Python, Pandas, NumPy, and Power BI for analytics and insights.',
+        tech: ['Python', 'Pandas', 'NumPy', 'Power BI'],
+        link: 'https://github.com/Kindkrishna',
+        thumbnail: null
+      },
+      {
+        tag: 'Agentic AI',
+        title: 'Agentic AI Systems & RAG Pipelines',
+        desc: 'Building intelligent autonomous agents using Model Context Protocol (MCP), RAG pipelines, and multi-agent architectures.',
+        tech: ['Python', 'AI Agents', 'RAG', 'MCP'],
+        link: 'https://github.com/Kindkrishna',
+        thumbnail: null
+      },
+      {
+        tag: 'Business Intelligence',
+        title: 'SQL & Power BI Analytics',
+        desc: 'Business analytics dashboards and SQL database optimization for data-driven decision making.',
+        tech: ['SQL', 'MySQL', 'Power BI', 'Excel'],
+        link: 'https://github.com/Kindkrishna',
+        thumbnail: null
+      },
+      {
+        tag: 'Cloud',
+        title: 'AWS Cloud Solutions',
+        desc: 'Cloud infrastructure and deployment solutions using AWS for scalable applications.',
+        tech: ['AWS', 'Python', 'Cloud Computing'],
+        link: 'https://github.com/Kindkrishna',
+        thumbnail: null
+      },
+      {
+        tag: 'Portfolio',
+        title: 'Interactive Portfolio Website',
+        desc: 'Modern, responsive portfolio website built with HTML, CSS, and JavaScript. Deployed via GitHub Pages.',
+        tech: ['HTML', 'CSS', 'JavaScript', 'GitHub Pages'],
+        link: 'https://github.com/Kindkrishna/KindKrishna.github.io',
+        thumbnail: null
+      },
+      {
+        tag: 'Machine Learning',
+        title: 'ML Models & Predictive Analytics',
+        desc: 'Building and deploying machine learning models for classification, regression, and predictive analytics.',
+        tech: ['Python', 'Sklearn', 'ML', 'Statistics'],
+        link: 'https://github.com/Kindkrishna',
+        thumbnail: null
       }
-    })
-      .then(response => {
-        if (!response.ok) {
-          throw new Error(`GitHub API responded with ${response.status}`);
-        }
-        return response.json();
-      })
-      .then(repos => {
-        if (loading) loading.remove();
-        
-        if (!repos || repos.length === 0) {
-          grid.innerHTML = '<p class="project-empty">No public repositories found. Visit my <a href="https://github.com/Kindkrishna" target="_blank">GitHub profile</a>.</p>';
-          return;
-        }
+    ];
 
-        let projectsAdded = 0;
-        
-        repos.forEach(repo => {
-          // Skip forked repositories and archived ones
-          if (repo.fork || repo.archived) return;
-          
-          const techStack = [];
-          if (repo.language) techStack.push(repo.language);
-          techStack.push('GitHub');
-          if (Array.isArray(repo.topics) && repo.topics.length) {
-            repo.topics.slice(0, 2).forEach(topic => techStack.push(topic));
-          }
+    // Add all projects to the grid
+    projects.forEach(project => addProject(project));
 
-          getReadmeThumbnail(repo).then(thumbnail => {
-            addProject({
-              tag: repo.private ? 'Private' : 'Public',
-              title: repo.name,
-              desc: repo.description || 'No repository description provided.',
-              tech: techStack,
-              link: repo.html_url,
-              thumbnail
-            });
-            projectsAdded++;
-          });
-        });
-
-        // Fallback if no projects load after timeout
-        setTimeout(() => {
-          if (projectsAdded === 0 && grid.children.length === 0) {
-            grid.innerHTML = '<p class="project-empty">Projects are loading or not available. Visit my <a href="https://github.com/Kindkrishna" target="_blank">GitHub profile</a> directly.</p>';
-          }
-        }, 3000);
-      })
-      .catch(error => {
-        console.error('GitHub API Error:', error);
-        if (loading) {
-          loading.innerHTML = `<p class="project-empty">Unable to load repositories. <a href="https://github.com/Kindkrishna" target="_blank">View on GitHub</a></p>`;
-        }
-      });
+    // Add observer for fade-in animation
+    const projectCards = grid.querySelectorAll('.project-card');
+    projectCards.forEach(card => observer.observe(card));
   }
 
-  const extraProjects = [
-    // Add project objects here if you want to pin additional work locally.
-  ];
-
-  extraProjects.forEach(p => addProject(p));
-  loadGitHubProjects();
+  loadProjects();
 
 });
