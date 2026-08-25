@@ -1,4 +1,4 @@
-![K K Krishna Portfolio Banner](https://copilot.microsoft.com/th/id/BCO.6eb3f217-d34f-4877-b7a7-313893db8b1e.png)
+![K K Krishna Portfolio Banner] https://github.com/Kindkrishna/KindKrishna.github.io/blob/72f8e369c27a7c0f2ab4142f0c5c2539b8bd9617/image1.png))
 
 # Kishor Kumar Krishna — Personal Portfolio Website
 
