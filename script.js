@@ -1,6 +1,11 @@
 /* ─────────────────────────────────────────
-   KISHOR KUMAR KRISHNA — Portfolio JS
+   KISHOR KUMAR KRISHNA — Portfolio JS (updated)
    script.js
+   Changes:
+   - Ensure projects are ordered by creation date (newest first)
+   - Limit shown repos to latest 8 by date
+   - Use README images as thumbnails (resolves relative paths)
+   - Place the newest repo first (prepended) so it appears at the top
 ───────────────────────────────────────── */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -135,8 +140,8 @@ document.addEventListener('DOMContentLoaded', () => {
     themeToggle.textContent = isDark ? '☀' : '🌙';
   });
 
-  /* ── PROJECTS FROM GITHUB ── */
-  function addProject (project) {
+  /* ── PROJECTS FROM GITHUB (sorted by creation date) ── */
+  function addProject (project, position = 'append') {
     const grid = document.getElementById('projectsGrid');
     const card = document.createElement('article');
     card.className = 'project-card';
@@ -150,7 +155,9 @@ document.addEventListener('DOMContentLoaded', () => {
         <a href="${project.link}" target="_blank" rel="noopener" class="project-link">GitHub →</a>
       </div>
     `;
-    grid.appendChild(card);
+
+    if (position === 'prepend') grid.prepend(card);
+    else grid.appendChild(card);
   }
 
   function getReadmeThumbnail (repo) {
@@ -163,15 +170,21 @@ document.addEventListener('DOMContentLoaded', () => {
         return fetch(readme.download_url)
           .then(response => response.ok ? response.text() : '')
           .then(markdown => {
+            // Find first non-badge image in markdown or HTML <img>
             const imageMatches = [
-              ...markdown.matchAll(/!\[[^\]]*\]\(([^)\s]+)(?:\s+['"][^'"]*['"])?\)/g),
+              ...markdown.matchAll(/!\[[^\]]*\]\(([^)\s]+)(?:\s+['\"][^'\"]*['\"])?\)/g),
               ...markdown.matchAll(/<img[^>]+src=["']([^"']+)["']/gi)
             ];
             const image = imageMatches
               .map(match => match[1])
               .find(url => !/shields\.io|badge|travis-ci|codecov/i.test(url));
 
-            return image ? new URL(image, readme.download_url).href : null;
+            if (!image) return null;
+            try {
+              return new URL(image, readme.download_url).href;
+            } catch (e) {
+              return image;
+            }
           });
       })
       .catch(() => null);
@@ -179,7 +192,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function loadGitHubProjects () {
     const username = 'Kindkrishna';
-    const url = `https://api.github.com/users/${username}/repos?sort=updated&per_page=8`;
+    // fetch a larger page then sort client-side by creation date
+    const url = `https://api.github.com/users/${username}/repos?per_page=50`;
     const grid = document.getElementById('projectsGrid');
     const loading = grid.querySelector('.project-loading');
 
@@ -195,7 +209,13 @@ document.addEventListener('DOMContentLoaded', () => {
           return;
         }
 
-        repos.forEach(repo => {
+        // Sort by creation date descending (newest first)
+        repos.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+        // Limit to the most recent 8 repositories
+        const selected = repos.slice(0, 8);
+
+        selected.forEach((repo, idx) => {
           const techStack = [];
           if (repo.language) techStack.push(repo.language);
           techStack.push('GitHub');
@@ -203,14 +223,20 @@ document.addEventListener('DOMContentLoaded', () => {
             repo.topics.slice(0, 2).forEach(topic => techStack.push(topic));
           }
 
-          getReadmeThumbnail(repo).then(thumbnail => addProject({
+          // fetch README thumbnail and then add the project to the grid
+          getReadmeThumbnail(repo).then(thumbnail => {
+            const projectObj = {
               tag: repo.private ? 'Private' : 'Open Source',
               title: repo.name,
               desc: repo.description || 'No repository description provided.',
               tech: techStack,
               link: repo.html_url,
               thumbnail
-            }));
+            };
+
+            // For seniority: put the newest (idx===0) at the top using prepend
+            addProject(projectObj, idx === 0 ? 'prepend' : 'append');
+          });
         });
       })
       .catch(() => {
