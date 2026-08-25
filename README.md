@@ -1,5 +1,6 @@
 
-![K K Krishna Portfolio Banner](images/image1.png)
+<img src="images/image1.png" alt="K K" width="500">
+
 
 
 # Kishor Kumar Krishna — Personal Portfolio Website
