@@ -1,7 +1,7 @@
 /* ─────────────────────────────────────────
    KISHOR KUMAR KRISHNA — Portfolio JS
    script.js
-───────────────────────────────────────── */
+   ───────────────────────────────────────── */
 
 document.addEventListener('DOMContentLoaded', () => {
 
@@ -138,6 +138,8 @@ document.addEventListener('DOMContentLoaded', () => {
   /* ── PROJECTS FROM GITHUB ── */
   function addProject (project) {
     const grid = document.getElementById('projectsGrid');
+    if (!grid) return;
+    
     const card = document.createElement('article');
     card.className = 'project-card';
     card.innerHTML = `
@@ -156,7 +158,10 @@ document.addEventListener('DOMContentLoaded', () => {
   function getReadmeThumbnail (repo) {
     const readmeUrl = `https://api.github.com/repos/${repo.full_name}/readme`;
 
-    return fetch(readmeUrl, { headers: { Accept: 'application/vnd.github+json' } })
+    return fetch(readmeUrl, { 
+      headers: { Accept: 'application/vnd.github+json' },
+      timeout: 5000
+    })
       .then(response => response.ok ? response.json() : null)
       .then(readme => {
         if (!readme || !readme.download_url) return null;
@@ -179,23 +184,39 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function loadGitHubProjects () {
     const username = 'Kindkrishna';
-    const url = `https://api.github.com/users/${username}/repos?sort=updated&per_page=8`;
+    const url = `https://api.github.com/users/${username}/repos?sort=updated&per_page=8&type=public`;
     const grid = document.getElementById('projectsGrid');
+    
+    if (!grid) return;
+    
     const loading = grid.querySelector('.project-loading');
 
-    fetch(url)
+    fetch(url, {
+      headers: {
+        'Accept': 'application/vnd.github.v3+json',
+        'User-Agent': 'PortfolioPage'
+      }
+    })
       .then(response => {
-        if (!response.ok) throw new Error('GitHub API error');
+        if (!response.ok) {
+          throw new Error(`GitHub API responded with ${response.status}`);
+        }
         return response.json();
       })
       .then(repos => {
         if (loading) loading.remove();
+        
         if (!repos || repos.length === 0) {
-          grid.innerHTML = '<p class="project-empty">No public repositories found.</p>';
+          grid.innerHTML = '<p class="project-empty">No public repositories found. Visit my <a href="https://github.com/Kindkrishna" target="_blank">GitHub profile</a>.</p>';
           return;
         }
 
+        let projectsAdded = 0;
+        
         repos.forEach(repo => {
+          // Skip forked repositories and archived ones
+          if (repo.fork || repo.archived) return;
+          
           const techStack = [];
           if (repo.language) techStack.push(repo.language);
           techStack.push('GitHub');
@@ -203,18 +224,31 @@ document.addEventListener('DOMContentLoaded', () => {
             repo.topics.slice(0, 2).forEach(topic => techStack.push(topic));
           }
 
-          getReadmeThumbnail(repo).then(thumbnail => addProject({
-              tag: repo.private ? 'Private' : 'Open Source',
+          getReadmeThumbnail(repo).then(thumbnail => {
+            addProject({
+              tag: repo.private ? 'Private' : 'Public',
               title: repo.name,
               desc: repo.description || 'No repository description provided.',
               tech: techStack,
               link: repo.html_url,
               thumbnail
-            }));
+            });
+            projectsAdded++;
+          });
         });
+
+        // Fallback if no projects load after timeout
+        setTimeout(() => {
+          if (projectsAdded === 0 && grid.children.length === 0) {
+            grid.innerHTML = '<p class="project-empty">Projects are loading or not available. Visit my <a href="https://github.com/Kindkrishna" target="_blank">GitHub profile</a> directly.</p>';
+          }
+        }, 3000);
       })
-      .catch(() => {
-        if (loading) loading.textContent = 'Unable to load repositories. Please check your network or GitHub username.';
+      .catch(error => {
+        console.error('GitHub API Error:', error);
+        if (loading) {
+          loading.innerHTML = `<p class="project-empty">Unable to load repositories. <a href="https://github.com/Kindkrishna" target="_blank">View on GitHub</a></p>`;
+        }
       });
   }
 
