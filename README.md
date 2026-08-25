@@ -1,8 +1,5 @@
 ![K K Krishna Profile](https://github.com/Kindkrishna/KindKrishna.github.io/blob/main/prof.png)
 
-
-
-
 # Kishor Kumar Krishna — Personal Portfolio Website
 
 A clean, modern, mobile-responsive portfolio website for job applications in Data Science & BI.
