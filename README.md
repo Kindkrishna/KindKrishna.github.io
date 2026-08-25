@@ -1,5 +1,5 @@
 
-<img src="images/image1.png" alt="K K" width="500">
+![K K Krishna Profile](https://raw.githubusercontent.com/Kindkrishna/KindKrishna.github.io/main/profile.jpeg)
 
 
 
