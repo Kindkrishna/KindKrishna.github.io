@@ -1,7 +1,7 @@
 /* ─────────────────────────────────────────
    KISHOR KUMAR KRISHNA — Portfolio JS
    script.js
-   ───────────────────────────────────────── */
+───────────────────────────────────────── */
 
 document.addEventListener('DOMContentLoaded', () => {
 
@@ -138,8 +138,6 @@ document.addEventListener('DOMContentLoaded', () => {
   /* ── PROJECTS FROM GITHUB ── */
   function addProject (project) {
     const grid = document.getElementById('projectsGrid');
-    if (!grid) return;
-    
     const card = document.createElement('article');
     card.className = 'project-card';
     card.innerHTML = `
@@ -155,75 +153,76 @@ document.addEventListener('DOMContentLoaded', () => {
     grid.appendChild(card);
   }
 
-  /* ── HARDCODED PROJECTS SECTION ── */
-  function loadProjects () {
-    const grid = document.getElementById('projectsGrid');
-    if (!grid) return;
+  function getReadmeThumbnail (repo) {
+    const readmeUrl = `https://api.github.com/repos/${repo.full_name}/readme`;
 
-    // Remove loading message
-    const loading = grid.querySelector('.project-loading');
-    if (loading) loading.remove();
+    return fetch(readmeUrl, { headers: { Accept: 'application/vnd.github+json' } })
+      .then(response => response.ok ? response.json() : null)
+      .then(readme => {
+        if (!readme || !readme.download_url) return null;
+        return fetch(readme.download_url)
+          .then(response => response.ok ? response.text() : '')
+          .then(markdown => {
+            const imageMatches = [
+              ...markdown.matchAll(/!\[[^\]]*\]\(([^)\s]+)(?:\s+['"][^'"]*['"])?\)/g),
+              ...markdown.matchAll(/<img[^>]+src=["']([^"']+)["']/gi)
+            ];
+            const image = imageMatches
+              .map(match => match[1])
+              .find(url => !/shields\.io|badge|travis-ci|codecov/i.test(url));
 
-    // Your featured projects - add more as you create them
-    const projects = [
-      {
-        tag: 'Data Science',
-        title: 'Data Analysis & Visualization Projects',
-        desc: 'Collection of data science projects using Python, Pandas, NumPy, and Power BI for analytics and insights.',
-        tech: ['Python', 'Pandas', 'NumPy', 'Power BI'],
-        link: 'https://github.com/Kindkrishna',
-        thumbnail: null
-      },
-      {
-        tag: 'Agentic AI',
-        title: 'Agentic AI Systems & RAG Pipelines',
-        desc: 'Building intelligent autonomous agents using Model Context Protocol (MCP), RAG pipelines, and multi-agent architectures.',
-        tech: ['Python', 'AI Agents', 'RAG', 'MCP'],
-        link: 'https://github.com/Kindkrishna',
-        thumbnail: null
-      },
-      {
-        tag: 'Business Intelligence',
-        title: 'SQL & Power BI Analytics',
-        desc: 'Business analytics dashboards and SQL database optimization for data-driven decision making.',
-        tech: ['SQL', 'MySQL', 'Power BI', 'Excel'],
-        link: 'https://github.com/Kindkrishna',
-        thumbnail: null
-      },
-      {
-        tag: 'Cloud',
-        title: 'AWS Cloud Solutions',
-        desc: 'Cloud infrastructure and deployment solutions using AWS for scalable applications.',
-        tech: ['AWS', 'Python', 'Cloud Computing'],
-        link: 'https://github.com/Kindkrishna',
-        thumbnail: null
-      },
-      {
-        tag: 'Portfolio',
-        title: 'Interactive Portfolio Website',
-        desc: 'Modern, responsive portfolio website built with HTML, CSS, and JavaScript. Deployed via GitHub Pages.',
-        tech: ['HTML', 'CSS', 'JavaScript', 'GitHub Pages'],
-        link: 'https://github.com/Kindkrishna/KindKrishna.github.io',
-        thumbnail: null
-      },
-      {
-        tag: 'Machine Learning',
-        title: 'ML Models & Predictive Analytics',
-        desc: 'Building and deploying machine learning models for classification, regression, and predictive analytics.',
-        tech: ['Python', 'Sklearn', 'ML', 'Statistics'],
-        link: 'https://github.com/Kindkrishna',
-        thumbnail: null
-      }
-    ];
-
-    // Add all projects to the grid
-    projects.forEach(project => addProject(project));
-
-    // Add observer for fade-in animation
-    const projectCards = grid.querySelectorAll('.project-card');
-    projectCards.forEach(card => observer.observe(card));
+            return image ? new URL(image, readme.download_url).href : null;
+          });
+      })
+      .catch(() => null);
   }
 
-  loadProjects();
+  function loadGitHubProjects () {
+    const username = 'Kindkrishna';
+    const url = `https://api.github.com/users/${username}/repos?sort=updated&per_page=8`;
+    const grid = document.getElementById('projectsGrid');
+    const loading = grid.querySelector('.project-loading');
+
+    fetch(url)
+      .then(response => {
+        if (!response.ok) throw new Error('GitHub API error');
+        return response.json();
+      })
+      .then(repos => {
+        if (loading) loading.remove();
+        if (!repos || repos.length === 0) {
+          grid.innerHTML = '<p class="project-empty">No public repositories found.</p>';
+          return;
+        }
+
+        repos.forEach(repo => {
+          const techStack = [];
+          if (repo.language) techStack.push(repo.language);
+          techStack.push('GitHub');
+          if (Array.isArray(repo.topics) && repo.topics.length) {
+            repo.topics.slice(0, 2).forEach(topic => techStack.push(topic));
+          }
+
+          getReadmeThumbnail(repo).then(thumbnail => addProject({
+              tag: repo.private ? 'Private' : 'Open Source',
+              title: repo.name,
+              desc: repo.description || 'No repository description provided.',
+              tech: techStack,
+              link: repo.html_url,
+              thumbnail
+            }));
+        });
+      })
+      .catch(() => {
+        if (loading) loading.textContent = 'Unable to load repositories. Please check your network or GitHub username.';
+      });
+  }
+
+  const extraProjects = [
+    // Add project objects here if you want to pin additional work locally.
+  ];
+
+  extraProjects.forEach(p => addProject(p));
+  loadGitHubProjects();
 
 });
