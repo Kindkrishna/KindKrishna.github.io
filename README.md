@@ -1,4 +1,4 @@
-![K K Krishna Portfolio Banner] https://github.com/Kindkrishna/KindKrishna.github.io/blob/72f8e369c27a7c0f2ab4142f0c5c2539b8bd9617/image1.png))
+![K K Krishna Portfolio Banner] (https://github.com/Kindkrishna/KindKrishna.github.io/blob/72f8e369c27a7c0f2ab4142f0c5c2539b8bd9617/image1.png))
 
 # Kishor Kumar Krishna — Personal Portfolio Website
 
