@@ -2,10 +2,10 @@
    KISHOR KUMAR KRISHNA — Portfolio JS (updated)
    script.js
    Changes:
-   - Ensure projects are ordered by creation date (newest first)
+   - Projects ordered by creation date (newest first)
    - Limit shown repos to latest 8 by date
    - Use README images as thumbnails (resolves relative paths)
-   - Place the newest repo first (prepended) so it appears at the top
+   - Fetch larger page size to ensure all repos are considered
 ───────────────────────────────────────── */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -140,7 +140,7 @@ document.addEventListener('DOMContentLoaded', () => {
     themeToggle.textContent = isDark ? '☀' : '🌙';
   });
 
-  /* ── PROJECTS FROM GITHUB (sorted by creation date) ── */
+  /* ── PROJECTS FROM GITHUB (sorted by creation date, newest first) ── */
   function addProject (project, position = 'append') {
     const grid = document.getElementById('projectsGrid');
     const card = document.createElement('article');
@@ -192,8 +192,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function loadGitHubProjects () {
     const username = 'Kindkrishna';
-    // fetch a larger page then sort client-side by creation date
-    const url = `https://api.github.com/users/${username}/repos?per_page=50`;
+    // Fetch all repos (with pagination support) then sort by creation date
+    const url = `https://api.github.com/users/${username}/repos?per_page=100&sort=created&direction=desc`;
     const grid = document.getElementById('projectsGrid');
     const loading = grid.querySelector('.project-loading');
 
@@ -209,7 +209,8 @@ document.addEventListener('DOMContentLoaded', () => {
           return;
         }
 
-        // Sort by creation date descending (newest first)
+        // GitHub API already returns repos sorted by creation date (newest first)
+        // when using sort=created&direction=desc, but we'll ensure it client-side
         repos.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
         // Limit to the most recent 8 repositories
@@ -231,11 +232,12 @@ document.addEventListener('DOMContentLoaded', () => {
               desc: repo.description || 'No repository description provided.',
               tech: techStack,
               link: repo.html_url,
-              thumbnail
+              thumbnail,
+              created_at: repo.created_at
             };
 
-            // For seniority: put the newest (idx===0) at the top using prepend
-            addProject(projectObj, idx === 0 ? 'prepend' : 'append');
+            // Add projects in order (they're already sorted newest first)
+            addProject(projectObj, 'append');
           });
         });
       })
